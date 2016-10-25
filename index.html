@@ -11,27 +11,6 @@
     <style>
         body { margin:0; padding:0; }
         #map { position:absolute; top:0; bottom:0; width:100%; }
-        .overlay {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-}
-
-.overlay button {
-    font:600 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
-    background-color: #3386c0;
-    color: #fff;
-    display: inline-block;
-    margin: 0;
-    padding: 10px 20px;
-    border: none;
-    cursor: pointer;
-    border-radius: 3px;
-}
-
-.overlay button:hover {
-    background-color:#4ea0da;
-}
     </style>
     <script src='https://api.tiles.mapbox.com/mapbox.js/plugins/turf/v2.0.0/turf.min.js'></script>
 </head>
@@ -141,13 +120,21 @@ map.on('load', function() {
         }
     });
 
-    for (i in paths) {
-      (function(i) {
+    var buffers = points.map(function(point){
+      return turf.buffer(point, 0.02, 'miles');
+    });
+
+    var unions = [];
+
+    // for (var i in paths) {
+    paths.forEach(function(path, i) {
+      // (function(path, i) {
         var step = 0;
-        var numSteps = 200; //Change this to set animation resolution
+        var numSteps = 150; //Change this to set animation resolution
         var timePerStep = 50; //Change this to alter animation speed
         var pSource = map.getSource('pointData'+i);
         var forward = true;
+        var hasReversed = false;
         var interval = setInterval(function() {
             if (forward) {
               step += 1;
@@ -157,14 +144,48 @@ map.on('load', function() {
             if ((step > numSteps) || (step < 0)) {
                 // reverse
                 forward = !forward;
+                hasReversed = true;
             } else {
                 var curDistance = step / numSteps * pathLengths[i];
-                var newpoint = turf.along(paths[i], curDistance, 'miles');
-                pSource.setData(newpoint);
+                var newpoint = turf.along(path, curDistance, 'miles');
+                pSource.setData(newpoint)
+                buffers[i] = turf.buffer(newpoint, 0.02, 'miles');
+                // check if any intersect
+                if (!hasReversed) {
+                    for (var k = 0; k < buffers.length; k++) {
+                        for (var j = k + 1; j < buffers.length; j++) {
+                            var poly1 = buffers[k].features[0];
+                            var poly2 = buffers[j].features[0];
+                            var intersects = turf.intersect(poly1, poly2);
+                            if (intersects) {
+                              var union = turf.union(poly1, poly2);
+                              var name = 'union'+i+j+k;
+
+                              if (unions.indexOf(name) == -1) {
+                                  unions.push(name);
+
+                                  map.addSource('union'+i+j+k, {
+                                      'type': 'geojson',
+                                      'data': union
+                                  });
+                                  map.addLayer({
+                                      'id': 'union'+i+j+k+'-id',
+                                      'source': 'union'+i+j+k,
+                                      "type": "fill",
+                                      "paint": {
+                                          "fill-color": "red",
+                                          "fill-opacity": 0.15,
+                                          "fill-outline-color": "brown"
+                                      }
+                                  });
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }, timePerStep);
-      })(i);
-    }
+    });
 });
 </script>
 
