@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title></title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js'></script>
+<link href='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.css' rel='stylesheet' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.26.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.26.0/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+        .overlay {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+}
+
+.overlay button {
+    font:600 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    background-color: #3386c0;
+    color: #fff;
+    display: inline-block;
+    margin: 0;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.overlay button:hover {
+    background-color:#4ea0da;
+}
+    </style>
+    <script src='https://api.tiles.mapbox.com/mapbox.js/plugins/turf/v2.0.0/turf.min.js'></script>
+</head>
+<body>
+
+<div id='map'>
+</div>
+
+<script>
+mapboxgl.accessToken = 'pk.eyJ1IjoiY3Jpc3RlbmpvbmVzIiwiYSI6ImNpdXB3aGxhdjAyZ3EyenJ0MHFzMW1la2MifQ.XykQ77K8eYNdx81cxHvCxw';
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/dark-v9',
+    // style: 'mapbox://styles/mapbox/satellite-streets-v9',
+    center: [-87.61694, 41.86625],
+    zoom: 16.99,
+    pitch: 40,
+    bearing: 20
+});
+
+var path1 = turf.linestring([[-87.61900305747986,41.86703213125954],[-87.61910498142242,41.866796434144106],[-87.61917471885681,41.86652078726272],[-87.61920690536499,41.866213179919455],[-87.61916935443878,41.86580170284755],[-87.61912643909454,41.86556999614642],[-87.61903524398802,41.86526637919799],[-87.61898696422577,41.86502268560421],[-87.61898159980774,41.86498273574613],[-87.61574149131775,41.86503067557285],[-87.61519432067871,41.86503866554047],[-87.61522114276886,41.86530632887885],[-87.61513531208038,41.86531032384558],[-87.61509239673615,41.86533029867538],[-87.61502265930176,41.86533029867538],[-87.61502265930176,41.865641905212506],[-87.61478126049042,41.86564989510374],[-87.6147973537445,41.86555801129421]]);
+var path2 = turf.linestring([[-87.61486172676086,41.86326486823395],[-87.61476516723631,41.863464622641665],[-87.61457204818726,41.863768248146194],[-87.61435747146606,41.864095842468274],[-87.61419653892517,41.86442343511187],[-87.61413216590881,41.86471906605671],[-87.6141107082367,41.86497474577151],[-87.6141107082367,41.86527836410486],[-87.61412143707274,41.86568584960196],[-87.61418581008911,41.865957505157176],[-87.6144003868103,41.86594152545061],[-87.61451303958893,41.865929540668034],[-87.61450231075287,41.865500084476864],[-87.61469811201096,41.865506076908694],[-87.61470347642899,41.865384230684725]]);
+var path3 = turf.linestring([[-87.61477053165436,41.8653342936406],[-87.61507630348206,41.8653342936406],[-87.61512994766235,41.86531431881202],[-87.61522650718689,41.86531431881202],[-87.61524796485901,41.86567386477147],[-87.61539816856384,41.8657937129753],[-87.6154088973999,41.86604938839259],[-87.6155698299408,41.86604539347204],[-87.61556446552277,41.86626111882355],[-87.61632084846497,41.86626511373061],[-87.61631548404694,41.865949515304386],[-87.61705577373505,41.86593353559581],[-87.61705577373505,41.865745773720725],[-87.6171362400055,41.86593353559581],[-87.61798918247221,41.86592554574001],[-87.61802136898041,41.86649681791251],[-87.61699140071869,41.866508802588754],[-87.61698603630066,41.866892311041674],[-87.61698067188262,41.86717195117162],[-87.61569321155547,41.86718793057067],[-87.6149046421051,41.86660867480324],[-87.61494219303131,41.86654875149327],[-87.61493146419525,41.86605737823288]]);
+var path4 = turf.linestring([[-87.61536061763763,41.86529034900951],[-87.618488073349,41.865262384228544],[-87.618488073349,41.86542218281215],[-87.61858999729156,41.86547012230937],[-87.61880993843079,41.86547411726584],[-87.618847489357,41.8663569965239],[-87.61861145496368,41.86637697102672],[-87.61863827705383,41.86694024943653],[-87.61839687824249,41.86715197691719],[-87.61709868907928,41.867167956321225],[-87.61709332466125,41.86656073615974],[-87.61599361896513,41.866564731048065],[-87.61597752571106,41.8657098192562]]);
+
+var paths = [path1, path2, path3, path4];
+var pathLengths = paths.map(function(p) {
+  return turf.lineDistance(p, 'miles');
+});
+var points = paths.map(function(p) {
+  return turf.along(p, 0, 'miles');
+});
+
+map.on('load', function() {
+
+    for (i in paths) {
+      var name = 'pathData' + i;
+      map.addSource(name, {
+        "type": "geojson",
+        "data": paths[i]
+      });
+
+      map.addLayer({
+          'id': name+'-id',
+          'type': 'line',
+          'source': name,
+          'paint': {
+            'line-color': 'grey',
+            'line-dasharray': [1,.2],
+            'line-width': 8,
+            'line-opacity': 0.05,
+          }
+      });
+    }
+
+    for (i in points) {
+      var name = 'pointData' + i;
+
+      map.addSource(name, {
+        "type": "geojson",
+        "data": points[i]
+      });
+
+      map.addLayer({
+          'id': name+'-id',
+          'source': name,
+          "type": "circle",
+          "paint": {
+              "circle-radius": 13,
+              "circle-color": "#00ffd3",
+              "circle-blur": 0.95,
+          }
+      });
+    }
+
+    // Geojson Data source used in vector tiles, documented at
+    // https://gist.github.com/ryanbaumann/a7d970386ce59d11c16278b90dde094d
+    map.addSource("museumData", {
+        'type': 'geojson',
+        'data': './indoor-3d-map.geojson'
+    });
+
+    map.addLayer({
+        'id': 'room-extrude',
+        'type': 'fill',
+        'source': 'museumData',
+        'paint': {
+            // See the Mapbox Style Spec for details on property functions
+            // https://www.mapbox.com/mapbox-gl-style-spec/#types-function
+            'fill-color': {
+                // Get the fill-color from the source 'color' property.
+                'property': 'color',
+                'type': 'identity'
+            },
+            'fill-extrude-height': {
+                // Get fill-extrude-height from the source 'height' property.
+                'property': 'height',
+                'type': 'identity'
+            },
+            'fill-extrude-base': {
+                // Get fill-extrude-base from the source 'base_height' property.
+                'property': 'base_height',
+                'type': 'identity'
+            },
+            // Make extrusions slightly opaque for see through indoor walls.
+            'fill-opacity': 0.5
+        }
+    });
+
+    for (i in paths) {
+      (function(i) {
+        var step = 0;
+        var numSteps = 200; //Change this to set animation resolution
+        var timePerStep = 50; //Change this to alter animation speed
+        var pSource = map.getSource('pointData'+i);
+        var forward = true;
+        var interval = setInterval(function() {
+            if (forward) {
+              step += 1;
+            } else {
+              step -= 1;
+            }
+            if ((step > numSteps) || (step < 0)) {
+                // reverse
+                forward = !forward;
+            } else {
+                var curDistance = step / numSteps * pathLengths[i];
+                var newpoint = turf.along(paths[i], curDistance, 'miles');
+                pSource.setData(newpoint);
+            }
+        }, timePerStep);
+      })(i);
+    }
+});
+</script>
+
+</body>
+</html>
