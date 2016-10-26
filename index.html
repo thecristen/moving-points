@@ -130,7 +130,7 @@ map.on('load', function() {
     paths.forEach(function(path, i) {
       // (function(path, i) {
         var step = 0;
-        var numSteps = 150; //Change this to set animation resolution
+        var numSteps = 100; //Change this to set animation resolution
         var timePerStep = 50; //Change this to alter animation speed
         var pSource = map.getSource('pointData'+i);
         var forward = true;
@@ -151,34 +151,33 @@ map.on('load', function() {
                 pSource.setData(newpoint)
                 buffers[i] = turf.buffer(newpoint, 0.02, 'miles');
                 // check if any intersect
-                if (!hasReversed) {
-                    for (var k = 0; k < buffers.length; k++) {
-                        for (var j = k + 1; j < buffers.length; j++) {
-                            var poly1 = buffers[k].features[0];
-                            var poly2 = buffers[j].features[0];
-                            var intersects = turf.intersect(poly1, poly2);
-                            if (intersects) {
-                              var union = turf.union(poly1, poly2);
-                              var name = 'union'+i+j+k;
+                for (var k = 0; k < buffers.length; k++) {
+                    for (var j = k + 1; j < buffers.length; j++) {
+                        var poly1 = buffers[k].features[0];
+                        var poly2 = buffers[j].features[0];
+                        var intersects = turf.intersect(poly1, poly2);
+                        if (intersects) {
+                          var union = turf.union(poly1, poly2);
+                          var f = forward ? 'f' : 'b';
+                          var name = 'union'+i+j+k+f+step;
 
-                              if (unions.indexOf(name) == -1) {
-                                  unions.push(name);
+                          if (unions.indexOf(name) == -1) {
+                              unions.push(name);
 
-                                  map.addSource('union'+i+j+k, {
-                                      'type': 'geojson',
-                                      'data': union
-                                  });
-                                  map.addLayer({
-                                      'id': 'union'+i+j+k+'-id',
-                                      'source': 'union'+i+j+k,
-                                      "type": "fill",
-                                      "paint": {
-                                          "fill-color": "red",
-                                          "fill-opacity": 0.15,
-                                          "fill-outline-color": "brown"
-                                      }
-                                  });
-                                }
+                              map.addSource(name, {
+                                  'type': 'geojson',
+                                  'data': union
+                              });
+                              map.addLayer({
+                                  'id': name+'-id',
+                                  'source': name,
+                                  "type": "fill",
+                                  "paint": {
+                                      "fill-color": "red",
+                                      "fill-opacity": 0.015,
+                                      "fill-outline-color": "brown"
+                                  }
+                              });
                             }
                         }
                     }
